@@ -12,3 +12,7 @@ actual: 20m
 
 Weather function
 estimate: 40m
+
+error handling 
+estimate 15 minutes;
+actual 30 minutes;

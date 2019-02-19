@@ -19,6 +19,12 @@ app.get('/location', (request, response) => {
 
 app.get('/weather', (request, response) => {
   const weatherData = getWeather(request.query.data);
+
+
+app.use('*', (request, response)=>{
+  errorHandler('route not found', response);
+})
+
   response.send(weatherData);
 })
 
@@ -30,7 +36,6 @@ function searchToLatLong(place) {
 
 function getWeather(location) {
   const darkSkyData = require('./data/darksky.json');
-
   let weatherSummaries = [];
 
   darkSkyData.daily.data.forEach(day => {
@@ -49,6 +54,13 @@ function Location(query, res) {
 function Weather(day) {
   this.forecast = day.summary;
   this.time = new Date(day.time * 1000).toString().slice(0,15);
+}
+
+function errorHandler (err, res) {
+  console.error(err);
+  if (res){
+    res.status(500).send('sorry it all exploded');
+  }
 }
 
 //TODO:
