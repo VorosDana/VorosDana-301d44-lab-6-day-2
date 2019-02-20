@@ -45,10 +45,10 @@ function searchToLatLong(query) {
 
 function getWeather(location) {
   const darkSkyData = require('./data/darksky.json');
-  let weatherSummaries = [];
+  // let weatherSummaries = [];
 
-  darkSkyData.daily.data.map(day => {
-    weatherSummaries.push(new Weather(day));
+  let weatherSummaries = darkSkyData.daily.data.map(day => {
+    return new Weather(day);
   })
   return weatherSummaries;
 }
