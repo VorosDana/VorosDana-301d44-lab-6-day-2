@@ -14,18 +14,14 @@ app.use(cors());
 
 
 app.get('/location', (request, response) => {
-  // const locationData = searchToLatLong(request.query.data);
-  // response.send(locationData);
 
-  // Sam's lecture example
   searchToLatLong(request.query.data)
     .then(location => response.send(location))
     .catch(error => errorHandler(error, response));
 });
 
 app.get('/weather', (request, response) => {
-  const weatherData = getWeather(request.query.data);
-  response.send(weatherData);
+  getWeather(request.query.data, response);
 });
 
 app.use('*', (request, response) => {
@@ -37,20 +33,36 @@ function searchToLatLong(query) {
 
 
   // Sam's lecture example
-  const url = `https://maps.googleapis.com/map/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${process.env.GEOCODE_API_KEY}`;
+
   return superagent.get(url)
     .then(result => {
-      return new Location(query, result)}).catch(error => errorHandler)
+      return new Location(query, result)
+    }).catch(error => errorHandler)
 }
 
-function getWeather(location) {
-  const darkSkyData = require('./data/darksky.json');
-  // let weatherSummaries = [];
+function getWeather(location, response) {
 
-  let weatherSummaries = darkSkyData.daily.data.map(day => {
-    return new Weather(day);
-  })
-  return weatherSummaries;
+  const url = `https://api.darksky.net/forecast/${process.env.DARKSKY_API_KEY}/${location.latitude},${location.longitude}`;
+  // const url = `https://api.darksky.net/forecast/ffd2665ffae3fbbd75e69166d496fc13/42.3601,-71.0589`;
+  //              https://api.darksky.net/forecast/ffd2665ffae3fbbd75e69166d496fc13/-122.3320708,47.6062095
+
+   superagent.get(url).then(result => {
+      const weatherSummary = result.body.daily.data.map(day => {
+        return new Weather(day);
+      })
+      console.log(weatherSummary);
+      response.send(weatherSummary);
+    }).then((result) => console.log(result))
+    .catch(error => errorHandler);
+
+
+  // const darkSkyData = superagent.get(url);
+
+  // let weatherSummaries = darkSkyData.daily.data.map(day => {
+  //   return new Weather(day);
+  // })
+  // return weatherSummaries;
 }
 
 function Location(query, res) {
@@ -63,6 +75,7 @@ function Location(query, res) {
 function Weather(day) {
   this.forecast = day.summary;
   this.time = new Date(day.time * 1000).toString().slice(0, 15);
+
 }
 
 function errorHandler(err, res) {
